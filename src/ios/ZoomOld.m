@@ -5,12 +5,12 @@
  *  @version v4.6.21666.0603
  */
 
-#import "Zoom.h"
+#import "ZoomOld.h"
 
 #define kSDKDomain  @"https://zoom.us"
 #define DEBUG   NO
 
-@implementation Zoom
+@implementation ZoomOld
 
 - (void)initialize:(CDVInvokedUrlCommand*)command
 {

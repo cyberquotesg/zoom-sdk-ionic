@@ -51,7 +51,7 @@ import cordova.plugin.zoom.AuthThread;
  * @author  Zoom Video Communications, Inc.
  * @version v4.6.21666.0603
  */
-public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener, MeetingServiceListener {
+public class ZoomOld extends CordovaPlugin implements ZoomSDKAuthenticationListener, MeetingServiceListener {
     /* Debug variables */
     private static final String TAG = "<------- ZoomIonicAngularPlugin ---------->";
     private static final boolean DEBUG = false;
