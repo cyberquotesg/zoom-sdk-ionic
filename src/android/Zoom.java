@@ -29,6 +29,7 @@ import us.zoom.sdk.ZoomApiError;
 import us.zoom.sdk.ZoomAuthenticationError;
 import us.zoom.sdk.ZoomError;
 
+import us.zoom.sdk.MeetingParameter;
 import us.zoom.sdk.MeetingStatus;
 import us.zoom.sdk.MeetingError;
 import us.zoom.sdk.MeetingService;
@@ -982,6 +983,11 @@ public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener
         if (mZoomSDK.isLoggedIn()) {
             mZoomSDK.logoutZoom();
         }
+    }
+
+    @Override
+    public void onMeetingParameterNotification(MeetingParameter meetingParameter) {
+        if (DEBUG) { Log.i(TAG, "onMeetingParameterNotification"); }
     }
 
     /**
