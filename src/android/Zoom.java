@@ -306,20 +306,15 @@ public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener
      */
     private void isLoggedIn(CallbackContext callbackContext) {
         try {
-            cordova.getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (DEBUG) {
-                        Log.v(TAG, "[#############isLoggedIn Thread run()##############]");
-                    }
-                    ZoomSDK zoomSDK = ZoomSDK.getInstance();
-                    if (!zoomSDK.isInitialized()) {
-                        callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, "ZoomSDK has not been initialized."));
-                        return;
-                    }
-                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, zoomSDK.isLoggedIn()));
-                }
-            });
+            if (DEBUG) {
+                Log.v(TAG, "[#############isLoggedIn Thread run()##############]");
+            }
+            ZoomSDK zoomSDK = ZoomSDK.getInstance();
+            if (!zoomSDK.isInitialized()) {
+                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, "ZoomSDK has not been initialized."));
+                return;
+            }
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, zoomSDK.isLoggedIn()));
         } catch (Exception e) {
             callbackContext.error(e.getMessage());
         }
@@ -810,22 +805,17 @@ public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener
      */
     private void setLocale(String languageTag, CallbackContext callbackContext) {
         try {
-            cordova.getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (DEBUG) {
-                        Log.v(TAG, "[#############setLocale Thread run()##############]");
-                    }
-                    ZoomSDK zoomSDK = ZoomSDK.getInstance();
-                    try {
-                        Locale language = new Builder().setLanguageTag(languageTag.replaceAll("_","-")).build();
-                        zoomSDK.setSdkLocale(cordova.getActivity().getApplicationContext(), language);
-                        callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, "Successfully set language to " + languageTag));
-                    } catch (IllformedLocaleException ie) {
-                        callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, "Please pass valid language and country codes. [ERROR:" + ie.getMessage() + "]"));
-                    }
-                }
-            });
+            if (DEBUG) {
+                Log.v(TAG, "[#############setLocale Thread run()##############]");
+            }
+            ZoomSDK zoomSDK = ZoomSDK.getInstance();
+            try {
+                Locale language = new Builder().setLanguageTag(languageTag.replaceAll("_","-")).build();
+                zoomSDK.setSdkLocale(cordova.getActivity().getApplicationContext(), language);
+                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, "Successfully set language to " + languageTag));
+            } catch (IllformedLocaleException ie) {
+                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, "Please pass valid language and country codes. [ERROR:" + ie.getMessage() + "]"));
+            }
         } catch (Exception e) {
             callbackContext.error(e.getMessage());
         }
