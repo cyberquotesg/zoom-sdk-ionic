@@ -171,11 +171,15 @@ public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener
             at.setAction("initialize");                                 // Set action
             at.setLock(LOCK);
             at.setInitParameters(appKey, appSecret, this.WEB_DOMAIN);   // Set init parameters
+
+            /* *a/
             FutureTask<Boolean> fr = new FutureTask<Boolean>(at);
-
             cordova.getActivity().runOnUiThread(fr);                    // Run init method on main thread
-
             boolean threadSuccess = fr.get();                           // False if has error.
+            /* */
+
+            boolean threadSuccess = at.call();
+
             if (DEBUG) {
                 Log.v(TAG, "******************Return from Future is: " + threadSuccess);
             }
@@ -623,22 +627,18 @@ public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener
             // if user is logged in, just start the meeting.
             StartMeetingParams4NormalUser params = new StartMeetingParams4NormalUser();
             params.meetingNo = meetingNumber;
-            cordova.getThreadPool().execute(new Runnable() {
-                @Override
-                public void run() {
-                    int response = meetingService.startMeetingWithParams(cordova.getActivity().getApplicationContext(), params, opts);
-                    PluginResult pluginResult = null;
-                    if (response != MeetingError.MEETING_ERROR_SUCCESS) {
-                        pluginResult =  new PluginResult(PluginResult.Status.ERROR, getMeetingErrorMessage(response));
-                        pluginResult.setKeepCallback(true);
-                        callbackContext.sendPluginResult(pluginResult);
-                    } else {
-                        pluginResult =  new PluginResult(PluginResult.Status.OK, getMeetingErrorMessage(response));
-                        pluginResult.setKeepCallback(true);
-                        callbackContext.sendPluginResult(pluginResult);
-                    }
-                }
-            });
+            
+            int response = meetingService.startMeetingWithParams(cordova.getActivity().getApplicationContext(), params, opts);
+            PluginResult pluginResult = null;
+            if (response != MeetingError.MEETING_ERROR_SUCCESS) {
+                pluginResult =  new PluginResult(PluginResult.Status.ERROR, getMeetingErrorMessage(response));
+                pluginResult.setKeepCallback(true);
+                callbackContext.sendPluginResult(pluginResult);
+            } else {
+                pluginResult =  new PluginResult(PluginResult.Status.OK, getMeetingErrorMessage(response));
+                pluginResult.setKeepCallback(true);
+                callbackContext.sendPluginResult(pluginResult);
+            }
         } else {
             // if user is not logged in, start the meeting with provided tokens.
             if (DEBUG) {
@@ -655,22 +655,17 @@ public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener
                 params.zoomAccessToken = zoomAccessToken;
                 params.meetingNo = meetingNumber;
 
-                cordova.getThreadPool().execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        int response = meetingService.startMeetingWithParams(cordova.getActivity().getApplicationContext(), params, opts);
-                        PluginResult pluginResult = null;
-                        if (response != MeetingError.MEETING_ERROR_SUCCESS) {
-                            pluginResult =  new PluginResult(PluginResult.Status.ERROR, getMeetingErrorMessage(response));
-                            pluginResult.setKeepCallback(true);
-                            callbackContext.sendPluginResult(pluginResult);
-                        } else {
-                            pluginResult =  new PluginResult(PluginResult.Status.OK, getMeetingErrorMessage(response));
-                            pluginResult.setKeepCallback(true);
-                            callbackContext.sendPluginResult(pluginResult);
-                        }
-                    }
-                });
+                int response = meetingService.startMeetingWithParams(cordova.getActivity().getApplicationContext(), params, opts);
+                PluginResult pluginResult = null;
+                if (response != MeetingError.MEETING_ERROR_SUCCESS) {
+                    pluginResult =  new PluginResult(PluginResult.Status.ERROR, getMeetingErrorMessage(response));
+                    pluginResult.setKeepCallback(true);
+                    callbackContext.sendPluginResult(pluginResult);
+                } else {
+                    pluginResult =  new PluginResult(PluginResult.Status.OK, getMeetingErrorMessage(response));
+                    pluginResult.setKeepCallback(true);
+                    callbackContext.sendPluginResult(pluginResult);
+                }
             } else {
                 pluginResult =  new PluginResult(PluginResult.Status.ERROR, "Your zoom token, zoom access token, or userId are not valid");
                 pluginResult.setKeepCallback(true);
@@ -774,25 +769,20 @@ public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener
             }
         }
 
-        cordova.getThreadPool().execute(new Runnable() {
-            @Override
-            public void run() {
-                int response = meetingService.startInstantMeeting(cordova.getActivity().getApplicationContext(), opts);
-                if (DEBUG) {
-                    Log.i(TAG, "onClickBtnLoginUserStartInstant, response=" + getMeetingErrorMessage(response));
-                }
-                PluginResult pluginResult = null;
-                if (response != MeetingError.MEETING_ERROR_SUCCESS) {
-                    pluginResult =  new PluginResult(PluginResult.Status.ERROR, getMeetingErrorMessage(response));
-                    pluginResult.setKeepCallback(true);
-                    callbackContext.sendPluginResult(pluginResult);
-                } else {
-                    pluginResult =  new PluginResult(PluginResult.Status.OK, getMeetingErrorMessage(response));
-                    pluginResult.setKeepCallback(true);
-                    callbackContext.sendPluginResult(pluginResult);
-                }
-            }
-        });
+        int response = meetingService.startInstantMeeting(cordova.getActivity().getApplicationContext(), opts);
+        if (DEBUG) {
+            Log.i(TAG, "onClickBtnLoginUserStartInstant, response=" + getMeetingErrorMessage(response));
+        }
+        PluginResult pluginResult = null;
+        if (response != MeetingError.MEETING_ERROR_SUCCESS) {
+            pluginResult =  new PluginResult(PluginResult.Status.ERROR, getMeetingErrorMessage(response));
+            pluginResult.setKeepCallback(true);
+            callbackContext.sendPluginResult(pluginResult);
+        } else {
+            pluginResult =  new PluginResult(PluginResult.Status.OK, getMeetingErrorMessage(response));
+            pluginResult.setKeepCallback(true);
+            callbackContext.sendPluginResult(pluginResult);
+        }
     }
 
     /**
