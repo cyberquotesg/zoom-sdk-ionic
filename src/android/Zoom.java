@@ -29,7 +29,6 @@ import us.zoom.sdk.ZoomApiError;
 import us.zoom.sdk.ZoomAuthenticationError;
 import us.zoom.sdk.ZoomError;
 
-import us.zoom.sdk.MeetingParameter;
 import us.zoom.sdk.MeetingStatus;
 import us.zoom.sdk.MeetingError;
 import us.zoom.sdk.MeetingService;
@@ -171,15 +170,11 @@ public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener
             at.setAction("initialize");                                 // Set action
             at.setLock(LOCK);
             at.setInitParameters(appKey, appSecret, this.WEB_DOMAIN);   // Set init parameters
-
-            /* *a/
             FutureTask<Boolean> fr = new FutureTask<Boolean>(at);
+
             cordova.getActivity().runOnUiThread(fr);                    // Run init method on main thread
+
             boolean threadSuccess = fr.get();                           // False if has error.
-            /* */
-
-            boolean threadSuccess = at.call();
-
             if (DEBUG) {
                 Log.v(TAG, "******************Return from Future is: " + threadSuccess);
             }
@@ -310,15 +305,20 @@ public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener
      */
     private void isLoggedIn(CallbackContext callbackContext) {
         try {
-            if (DEBUG) {
-                Log.v(TAG, "[#############isLoggedIn Thread run()##############]");
-            }
-            ZoomSDK zoomSDK = ZoomSDK.getInstance();
-            if (!zoomSDK.isInitialized()) {
-                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, "ZoomSDK has not been initialized."));
-                return;
-            }
-            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, zoomSDK.isLoggedIn()));
+            cordova.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (DEBUG) {
+                        Log.v(TAG, "[#############isLoggedIn Thread run()##############]");
+                    }
+                    ZoomSDK zoomSDK = ZoomSDK.getInstance();
+                    if (!zoomSDK.isInitialized()) {
+                        callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, "ZoomSDK has not been initialized."));
+                        return;
+                    }
+                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, zoomSDK.isLoggedIn()));
+                }
+            });
         } catch (Exception e) {
             callbackContext.error(e.getMessage());
         }
@@ -627,18 +627,22 @@ public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener
             // if user is logged in, just start the meeting.
             StartMeetingParams4NormalUser params = new StartMeetingParams4NormalUser();
             params.meetingNo = meetingNumber;
-            
-            int response = meetingService.startMeetingWithParams(cordova.getActivity().getApplicationContext(), params, opts);
-            
-            if (response != MeetingError.MEETING_ERROR_SUCCESS) {
-                pluginResult =  new PluginResult(PluginResult.Status.ERROR, getMeetingErrorMessage(response));
-                pluginResult.setKeepCallback(true);
-                callbackContext.sendPluginResult(pluginResult);
-            } else {
-                pluginResult =  new PluginResult(PluginResult.Status.OK, getMeetingErrorMessage(response));
-                pluginResult.setKeepCallback(true);
-                callbackContext.sendPluginResult(pluginResult);
-            }
+            cordova.getThreadPool().execute(new Runnable() {
+                @Override
+                public void run() {
+                    int response = meetingService.startMeetingWithParams(cordova.getActivity().getApplicationContext(), params, opts);
+                    PluginResult pluginResult = null;
+                    if (response != MeetingError.MEETING_ERROR_SUCCESS) {
+                        pluginResult =  new PluginResult(PluginResult.Status.ERROR, getMeetingErrorMessage(response));
+                        pluginResult.setKeepCallback(true);
+                        callbackContext.sendPluginResult(pluginResult);
+                    } else {
+                        pluginResult =  new PluginResult(PluginResult.Status.OK, getMeetingErrorMessage(response));
+                        pluginResult.setKeepCallback(true);
+                        callbackContext.sendPluginResult(pluginResult);
+                    }
+                }
+            });
         } else {
             // if user is not logged in, start the meeting with provided tokens.
             if (DEBUG) {
@@ -655,17 +659,22 @@ public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener
                 params.zoomAccessToken = zoomAccessToken;
                 params.meetingNo = meetingNumber;
 
-                int response = meetingService.startMeetingWithParams(cordova.getActivity().getApplicationContext(), params, opts);
-                
-                if (response != MeetingError.MEETING_ERROR_SUCCESS) {
-                    pluginResult =  new PluginResult(PluginResult.Status.ERROR, getMeetingErrorMessage(response));
-                    pluginResult.setKeepCallback(true);
-                    callbackContext.sendPluginResult(pluginResult);
-                } else {
-                    pluginResult =  new PluginResult(PluginResult.Status.OK, getMeetingErrorMessage(response));
-                    pluginResult.setKeepCallback(true);
-                    callbackContext.sendPluginResult(pluginResult);
-                }
+                cordova.getThreadPool().execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        int response = meetingService.startMeetingWithParams(cordova.getActivity().getApplicationContext(), params, opts);
+                        PluginResult pluginResult = null;
+                        if (response != MeetingError.MEETING_ERROR_SUCCESS) {
+                            pluginResult =  new PluginResult(PluginResult.Status.ERROR, getMeetingErrorMessage(response));
+                            pluginResult.setKeepCallback(true);
+                            callbackContext.sendPluginResult(pluginResult);
+                        } else {
+                            pluginResult =  new PluginResult(PluginResult.Status.OK, getMeetingErrorMessage(response));
+                            pluginResult.setKeepCallback(true);
+                            callbackContext.sendPluginResult(pluginResult);
+                        }
+                    }
+                });
             } else {
                 pluginResult =  new PluginResult(PluginResult.Status.ERROR, "Your zoom token, zoom access token, or userId are not valid");
                 pluginResult.setKeepCallback(true);
@@ -769,20 +778,25 @@ public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener
             }
         }
 
-        int response = meetingService.startInstantMeeting(cordova.getActivity().getApplicationContext(), opts);
-        if (DEBUG) {
-            Log.i(TAG, "onClickBtnLoginUserStartInstant, response=" + getMeetingErrorMessage(response));
-        }
-        
-        if (response != MeetingError.MEETING_ERROR_SUCCESS) {
-            pluginResult =  new PluginResult(PluginResult.Status.ERROR, getMeetingErrorMessage(response));
-            pluginResult.setKeepCallback(true);
-            callbackContext.sendPluginResult(pluginResult);
-        } else {
-            pluginResult =  new PluginResult(PluginResult.Status.OK, getMeetingErrorMessage(response));
-            pluginResult.setKeepCallback(true);
-            callbackContext.sendPluginResult(pluginResult);
-        }
+        cordova.getThreadPool().execute(new Runnable() {
+            @Override
+            public void run() {
+                int response = meetingService.startInstantMeeting(cordova.getActivity().getApplicationContext(), opts);
+                if (DEBUG) {
+                    Log.i(TAG, "onClickBtnLoginUserStartInstant, response=" + getMeetingErrorMessage(response));
+                }
+                PluginResult pluginResult = null;
+                if (response != MeetingError.MEETING_ERROR_SUCCESS) {
+                    pluginResult =  new PluginResult(PluginResult.Status.ERROR, getMeetingErrorMessage(response));
+                    pluginResult.setKeepCallback(true);
+                    callbackContext.sendPluginResult(pluginResult);
+                } else {
+                    pluginResult =  new PluginResult(PluginResult.Status.OK, getMeetingErrorMessage(response));
+                    pluginResult.setKeepCallback(true);
+                    callbackContext.sendPluginResult(pluginResult);
+                }
+            }
+        });
     }
 
     /**
@@ -795,17 +809,22 @@ public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener
      */
     private void setLocale(String languageTag, CallbackContext callbackContext) {
         try {
-            if (DEBUG) {
-                Log.v(TAG, "[#############setLocale Thread run()##############]");
-            }
-            ZoomSDK zoomSDK = ZoomSDK.getInstance();
-            try {
-                Locale language = new Builder().setLanguageTag(languageTag.replaceAll("_","-")).build();
-                zoomSDK.setSdkLocale(cordova.getActivity().getApplicationContext(), language);
-                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, "Successfully set language to " + languageTag));
-            } catch (IllformedLocaleException ie) {
-                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, "Please pass valid language and country codes. [ERROR:" + ie.getMessage() + "]"));
-            }
+            cordova.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (DEBUG) {
+                        Log.v(TAG, "[#############setLocale Thread run()##############]");
+                    }
+                    ZoomSDK zoomSDK = ZoomSDK.getInstance();
+                    try {
+                        Locale language = new Builder().setLanguageTag(languageTag.replaceAll("_","-")).build();
+                        zoomSDK.setSdkLocale(cordova.getActivity().getApplicationContext(), language);
+                        callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, "Successfully set language to " + languageTag));
+                    } catch (IllformedLocaleException ie) {
+                        callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, "Please pass valid language and country codes. [ERROR:" + ie.getMessage() + "]"));
+                    }
+                }
+            });
         } catch (Exception e) {
             callbackContext.error(e.getMessage());
         }
@@ -963,11 +982,6 @@ public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener
         if (mZoomSDK.isLoggedIn()) {
             mZoomSDK.logoutZoom();
         }
-    }
-
-    @Override
-    public void onMeetingParameterNotification(MeetingParameter meetingParameter) {
-        if (DEBUG) { Log.i(TAG, "onMeetingParameterNotification"); }
     }
 
     /**
