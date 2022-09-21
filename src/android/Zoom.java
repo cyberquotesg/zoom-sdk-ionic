@@ -629,7 +629,7 @@ public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener
             params.meetingNo = meetingNumber;
             
             int response = meetingService.startMeetingWithParams(cordova.getActivity().getApplicationContext(), params, opts);
-            PluginResult pluginResult = null;
+            
             if (response != MeetingError.MEETING_ERROR_SUCCESS) {
                 pluginResult =  new PluginResult(PluginResult.Status.ERROR, getMeetingErrorMessage(response));
                 pluginResult.setKeepCallback(true);
@@ -656,7 +656,7 @@ public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener
                 params.meetingNo = meetingNumber;
 
                 int response = meetingService.startMeetingWithParams(cordova.getActivity().getApplicationContext(), params, opts);
-                PluginResult pluginResult = null;
+                
                 if (response != MeetingError.MEETING_ERROR_SUCCESS) {
                     pluginResult =  new PluginResult(PluginResult.Status.ERROR, getMeetingErrorMessage(response));
                     pluginResult.setKeepCallback(true);
@@ -773,7 +773,7 @@ public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener
         if (DEBUG) {
             Log.i(TAG, "onClickBtnLoginUserStartInstant, response=" + getMeetingErrorMessage(response));
         }
-        PluginResult pluginResult = null;
+        
         if (response != MeetingError.MEETING_ERROR_SUCCESS) {
             pluginResult =  new PluginResult(PluginResult.Status.ERROR, getMeetingErrorMessage(response));
             pluginResult.setKeepCallback(true);
