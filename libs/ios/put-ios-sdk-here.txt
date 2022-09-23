@@ -1,1 +1,4 @@
-zoom-sdk-ios-5.11.10.4556
+zoom-sdk-ios-5.9.0.2170
+- MobileRTC.framework
+- MobileRTCResources.bundle
+- MobileRTCScreenShare.framework
