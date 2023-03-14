@@ -40,6 +40,7 @@ import us.zoom.sdk.StartMeetingParamsWithoutLogin;
 import us.zoom.sdk.JoinMeetingParams;
 import us.zoom.sdk.JoinMeetingOptions;
 import us.zoom.sdk.MeetingViewsOptions;
+import us.zoom.sdk.MeetingParameter;
 
 import cordova.plugin.zoom.AuthThread;
 
@@ -651,8 +652,8 @@ public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener
             }
             if (zoomToken.length() != 0 && zoomAccessToken.length() != 0 && userId.length() != 0) {
                 StartMeetingParamsWithoutLogin params = new StartMeetingParamsWithoutLogin();
-                params.userId = userId;
                 // by rachmad
+                // params.userId = userId;
                 // params.zoomToken = zoomToken;
                 params.userType = MeetingService.USER_TYPE_API_USER;
                 params.displayName = displayName;
@@ -1105,5 +1106,21 @@ public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener
             Log.v(TAG, "******getMeetingErrorMessage*********" + message.toString());
         }
         return message.toString();
+    }
+
+    /**
+     * onNotificationServiceStatus
+     */
+    @Override
+    public void onNotificationServiceStatus(SDKNotificationServiceStatus status) {
+        Log.v(TAG, "onNotificationServiceStatus is triggered");
+    }
+
+    /**
+     * onMeetingParameterNotification
+     */
+    @Override
+    public void onMeetingParameterNotification(MeetingParameter meetingParameter) {
+        Log.v(TAG, "onMeetingParameterNotification is triggered");
     }
 }

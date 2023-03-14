@@ -1,3 +1,3 @@
-zoom-sdk-android-5.9.0.3588
+zoom-sdk-android-5.13.10.12577
 - commonlib.aar
 - commonlib.aar
