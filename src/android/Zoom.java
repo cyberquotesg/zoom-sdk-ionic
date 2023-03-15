@@ -84,7 +84,6 @@ public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener
 
         cordova.setActivityResultCallback(this);
         this.callbackContext = callbackContext;
-        this.mZoomSDK = ZoomSDK.getInstance();
 
         switch(action) {
             case "initialize":
@@ -151,11 +150,6 @@ public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener
             Log.v(TAG, "********** Zoom's initialize called **********");
         }
 
-        // If the SDK has been successfully initialized, simply return.
-        if (this.mZoomSDK.isInitialized()) {
-            return;
-        }
-
         // Note: When "null" is pass from JS to Android, it is transferred as a word "null".
         if (appKey == null || appKey.trim().isEmpty() || appKey.equals("null")
                 || appSecret == null || appSecret.trim().isEmpty() || appSecret.equals("null")) {
@@ -212,39 +206,45 @@ public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener
      * @param callbackContext cordova callback context.
      */
     private void login(String username, String password, CallbackContext callbackContext) {
+        Zoom thisObject = this;
 
-        if (!this.mZoomSDK.isInitialized()) {
-            // Zoom SDK instance has not been initialized.
-            android.widget.Toast.makeText(
-                    cordova.getActivity().getApplicationContext(),
-                    "ZoomSDK has not been initialized successfully",
-                    android.widget.Toast.LENGTH_LONG
-            ).show();
-            callbackContext.error("ZoomSDK has not been initialized successfully");
-            return;
-        }
+        try {
+            cordova.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    ZoomSDK zoomSDK = ZoomSDK.getInstance();
 
-        // Empty username or password.
-        if (username.length() == 0 || password.length() == 0) {
-            callbackContext.error("Username and password cannot be empty.");
-            return;
-        }
+                    if (!zoomSDK.isInitialized()) {
+                        callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, "ZoomSDK has not been initialized."));
+                        return;
+                    }
 
-        // bind listener.
-        this.mZoomSDK.addAuthenticationListener(this);
+                    // Empty username or password.
+                    if (username.length() == 0 || password.length() == 0) {
+                        callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, "Username and password cannot be empty."));
+                        return;
+                    }
 
-        // Try to log user in.
-        int response = this.mZoomSDK.tryAutoLoginZoom();
+                    // bind listener.
+                    zoomSDK.addAuthenticationListener(thisObject);
 
-        if (DEBUG) {
-            Log.v(TAG, "[Login response ^^^^^^^^^^^^^^]= " + response);
-        }
+                    // Try to log user in.
+                    int response = zoomSDK.tryAutoLoginZoom();
 
-        if (response != ZoomApiError.ZOOM_API_ERROR_SUCCESS) {
-            PluginResult pluginResult = new PluginResult(PluginResult.Status.ERROR,
-                    getApiErrorMessage(response));
-            pluginResult.setKeepCallback(true);
-            callbackContext.sendPluginResult(pluginResult);
+                    if (DEBUG) {
+                        Log.v(TAG, "[Login response ^^^^^^^^^^^^^^]= " + response);
+                    }
+
+                    if (response != ZoomApiError.ZOOM_API_ERROR_SUCCESS) {
+                        PluginResult pluginResult = new PluginResult(PluginResult.Status.ERROR,
+                                getApiErrorMessage(response));
+                        pluginResult.setKeepCallback(true);
+                        callbackContext.sendPluginResult(pluginResult);
+                    }
+                }
+            });
+        } catch (Exception e) {
+            callbackContext.error(e.getMessage());
         }
     }
 
@@ -256,45 +256,52 @@ public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener
      * @param callbackContext   cordova callback context.
      */
     private void logout(CallbackContext callbackContext) {
+        Zoom thisObject = this;
+        
+        try {
+            cordova.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    ZoomSDK zoomSDK = ZoomSDK.getInstance();
 
-        if (!this.mZoomSDK.isInitialized()) {
-            // Zoom SDK instance has not been initialized.
-            android.widget.Toast.makeText(
-                    cordova.getActivity().getApplicationContext(),
-                    "ZoomSDK has not been initialized successfully",
-                    android.widget.Toast.LENGTH_LONG
-            ).show();
-            callbackContext.error("ZoomSDK has not been initialized successfully");
-            return;
-        }
+                    if (!zoomSDK.isInitialized()) {
+                        callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, "ZoomSDK has not been initialized."));
+                        return;
+                    }
 
-        PluginResult pluginResult = null;
-        // If user is not logged in.
-        if (!this.mZoomSDK.isLoggedIn()) {
-            pluginResult = new PluginResult(PluginResult.Status.ERROR, "You are not logged in.");
-            pluginResult.setKeepCallback(true);
-            callbackContext.sendPluginResult(pluginResult);
-            return;
-        }
-        // Bind listener.
-        this.mZoomSDK.addAuthenticationListener(this);
-        // User is logged in, trying to log user out.
-        if (!this.mZoomSDK.logoutZoom()) {
-            // logout error.
-            pluginResult = new PluginResult(PluginResult.Status.ERROR, false);
-            pluginResult.setKeepCallback(true);
-            callbackContext.sendPluginResult(pluginResult);
-            return;
-        }
+                    PluginResult pluginResult = null;
+                    
+                    // If user is not logged in.
+                    if (!zoomSDK.isLoggedIn()) {
+                        pluginResult = new PluginResult(PluginResult.Status.ERROR, "You are not logged in.");
+                        pluginResult.setKeepCallback(true);
+                        callbackContext.sendPluginResult(pluginResult);
+                        return;
+                    }
+                    // Bind listener.
+                    zoomSDK.addAuthenticationListener(thisObject);
+                    // User is logged in, trying to log user out.
+                    if (!zoomSDK.logoutZoom()) {
+                        // logout error.
+                        pluginResult = new PluginResult(PluginResult.Status.ERROR, false);
+                        pluginResult.setKeepCallback(true);
+                        callbackContext.sendPluginResult(pluginResult);
+                        return;
+                    }
 
-        // logout success.
-        pluginResult = new PluginResult(PluginResult.Status.OK, true);
-        if (DEBUG) {
-            Log.v(TAG, "===============Logout Success!==============");
-        }
+                    // logout success.
+                    pluginResult = new PluginResult(PluginResult.Status.OK, true);
+                    if (DEBUG) {
+                        Log.v(TAG, "===============Logout Success!==============");
+                    }
 
-        pluginResult.setKeepCallback(true);
-        callbackContext.sendPluginResult(pluginResult);
+                    pluginResult.setKeepCallback(true);
+                    callbackContext.sendPluginResult(pluginResult);
+                }
+            });
+        } catch (Exception e) {
+            callbackContext.error(e.getMessage());
+        }
     }
 
     /**
@@ -337,6 +344,12 @@ public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener
      * @param callbackContext   cordova callback context.
      */
     private void joinMeeting(String meetingNo, String meetingPassword, String displayName, JSONObject option, CallbackContext callbackContext) {
+        try {
+            cordova.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+
 
         if (DEBUG) { Log.v(TAG, "********** Zoom's join meeting called ,meetingNo=" + meetingNo + " **********"); }
 
@@ -473,6 +486,14 @@ public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener
             pluginResult.setKeepCallback(true);
             callbackContext.sendPluginResult(pluginResult);
         }
+
+
+
+                }
+            });
+        } catch (Exception e) {
+            callbackContext.error(e.getMessage());
+        }
     }
 
     /**
@@ -489,6 +510,12 @@ public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener
      * @param callbackContext   cordova callback context
      */
     private void startMeeting(String meetingNo, String displayName, String zoomToken, String zoomAccessToken, String userId, JSONObject option, CallbackContext callbackContext) {
+        try {
+            cordova.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+
 
         if (meetingNo == null || meetingNo.trim().isEmpty() || meetingNo.equals("null")) {
             callbackContext.error("Meeting number cannot be empty");
@@ -628,22 +655,17 @@ public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener
             // if user is logged in, just start the meeting.
             StartMeetingParams4NormalUser params = new StartMeetingParams4NormalUser();
             params.meetingNo = meetingNumber;
-            cordova.getThreadPool().execute(new Runnable() {
-                @Override
-                public void run() {
-                    int response = meetingService.startMeetingWithParams(cordova.getActivity().getApplicationContext(), params, opts);
-                    PluginResult pluginResult = null;
-                    if (response != MeetingError.MEETING_ERROR_SUCCESS) {
-                        pluginResult =  new PluginResult(PluginResult.Status.ERROR, getMeetingErrorMessage(response));
-                        pluginResult.setKeepCallback(true);
-                        callbackContext.sendPluginResult(pluginResult);
-                    } else {
-                        pluginResult =  new PluginResult(PluginResult.Status.OK, getMeetingErrorMessage(response));
-                        pluginResult.setKeepCallback(true);
-                        callbackContext.sendPluginResult(pluginResult);
-                    }
-                }
-            });
+            
+            int response = meetingService.startMeetingWithParams(cordova.getActivity().getApplicationContext(), params, opts);
+            if (response != MeetingError.MEETING_ERROR_SUCCESS) {
+                pluginResult =  new PluginResult(PluginResult.Status.ERROR, getMeetingErrorMessage(response));
+                pluginResult.setKeepCallback(true);
+                callbackContext.sendPluginResult(pluginResult);
+            } else {
+                pluginResult =  new PluginResult(PluginResult.Status.OK, getMeetingErrorMessage(response));
+                pluginResult.setKeepCallback(true);
+                callbackContext.sendPluginResult(pluginResult);
+            }
         } else {
             // if user is not logged in, start the meeting with provided tokens.
             if (DEBUG) {
@@ -660,27 +682,29 @@ public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener
                 params.zoomAccessToken = zoomAccessToken;
                 params.meetingNo = meetingNumber;
 
-                cordova.getThreadPool().execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        int response = meetingService.startMeetingWithParams(cordova.getActivity().getApplicationContext(), params, opts);
-                        PluginResult pluginResult = null;
-                        if (response != MeetingError.MEETING_ERROR_SUCCESS) {
-                            pluginResult =  new PluginResult(PluginResult.Status.ERROR, getMeetingErrorMessage(response));
-                            pluginResult.setKeepCallback(true);
-                            callbackContext.sendPluginResult(pluginResult);
-                        } else {
-                            pluginResult =  new PluginResult(PluginResult.Status.OK, getMeetingErrorMessage(response));
-                            pluginResult.setKeepCallback(true);
-                            callbackContext.sendPluginResult(pluginResult);
-                        }
-                    }
-                });
+                int response = meetingService.startMeetingWithParams(cordova.getActivity().getApplicationContext(), params, opts);
+                if (response != MeetingError.MEETING_ERROR_SUCCESS) {
+                    pluginResult =  new PluginResult(PluginResult.Status.ERROR, getMeetingErrorMessage(response));
+                    pluginResult.setKeepCallback(true);
+                    callbackContext.sendPluginResult(pluginResult);
+                } else {
+                    pluginResult =  new PluginResult(PluginResult.Status.OK, getMeetingErrorMessage(response));
+                    pluginResult.setKeepCallback(true);
+                    callbackContext.sendPluginResult(pluginResult);
+                }
             } else {
                 pluginResult =  new PluginResult(PluginResult.Status.ERROR, "Your zoom token, zoom access token, or userId are not valid");
                 pluginResult.setKeepCallback(true);
                 callbackContext.sendPluginResult(pluginResult);
             }
+        }
+
+
+
+                }
+            });
+        } catch (Exception e) {
+            callbackContext.error(e.getMessage());
         }
     }
 
@@ -694,110 +718,114 @@ public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener
      * @param callbackContext   cordova callback context
      */
     private void startInstantMeeting(JSONObject option, CallbackContext callbackContext) {
-        PluginResult pluginResult = null;
-        // Get Zoom SDK instance.
-        ZoomSDK zoomSDK = ZoomSDK.getInstance();
-        // If Zoom SDK is not initialized, throw error.
-        if (!zoomSDK.isInitialized()) {
-            pluginResult =  new PluginResult(PluginResult.Status.ERROR, "ZoomSDK has not been initialized successfully");
-            pluginResult.setKeepCallback(true);
-            callbackContext.sendPluginResult(pluginResult);
-            return;
+        try {
+            cordova.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    PluginResult pluginResult = null;
+                    
+                    // Get Zoom SDK instance.
+                    ZoomSDK zoomSDK = ZoomSDK.getInstance();
+                    // If Zoom SDK is not initialized, throw error.
+                    if (!zoomSDK.isInitialized()) {
+                        pluginResult =  new PluginResult(PluginResult.Status.ERROR, "ZoomSDK has not been initialized successfully");
+                        pluginResult.setKeepCallback(true);
+                        callbackContext.sendPluginResult(pluginResult);
+                        return;
+                    }
+                    // If user is not logged in, throw error.
+                    if (!zoomSDK.isLoggedIn()) {
+                        pluginResult =  new PluginResult(PluginResult.Status.ERROR, "You are not logged in");
+                        pluginResult.setKeepCallback(true);
+                        callbackContext.sendPluginResult(pluginResult);
+                        return;
+                    }
+
+                    MeetingService meetingService = zoomSDK.getMeetingService();
+                    InstantMeetingOptions opts = new InstantMeetingOptions();
+                    // If user provides meeting options, configure them.
+                    if (option != null) {
+                        try {
+                            opts.custom_meeting_id = option.isNull("custom_meeting_id")? null : option.getString("custom_meeting_id");
+                            // by rachmad
+                            // opts.participant_id = option.isNull("participant_id")? null : option.getString("participant_id");
+                            opts.no_unmute_confirm_dialog = option.isNull("no_unmute_confirm_dialog")? false : option.getBoolean("no_unmute_confirm_dialog");
+                            opts.no_webinar_register_dialog = option.isNull("no_webinar_register_dialog")? false : option.getBoolean("no_webinar_register_dialog");
+                            opts.no_driving_mode = option.isNull("no_driving_mode")? false : option.getBoolean("no_driving_mode");
+                            opts.no_invite = option.isNull("no_invite")? false : option.getBoolean("no_invite");
+                            opts.no_meeting_end_message = option.isNull("no_meeting_end_message")? false : option.getBoolean("no_meeting_end_message");
+                            opts.no_titlebar = option.isNull("no_titlebar")? false : option.getBoolean("no_titlebar");
+                            opts.no_bottom_toolbar = option.isNull("no_bottom_toolbar")? false : option.getBoolean("no_bottom_toolbar");
+                            opts.no_dial_in_via_phone = option.isNull("no_dial_in_via_phone")? false : option.getBoolean("no_dial_in_via_phone");
+                            opts.no_dial_out_to_phone = option.isNull("no_dial_out_to_phone")? false : option.getBoolean("no_dial_out_to_phone");
+                            opts.no_disconnect_audio = option.isNull("no_disconnect_audio")? false : option.getBoolean("no_disconnect_audio");
+                            opts.no_share = option.isNull("no_share")? false : option.getBoolean("no_share");
+                            opts.no_video = option.isNull("no_video")? false : option.getBoolean("no_video");
+                            opts.no_meeting_error_message = option.isNull("no_meeting_error_message")? false : option.getBoolean("no_meeting_error_message");
+                            opts.meeting_views_options = 0;
+
+                            if (!option.isNull("no_button_video") && option.getBoolean("no_button_video")) {
+                                opts.meeting_views_options += MeetingViewsOptions.NO_BUTTON_VIDEO;
+                            }
+
+                            if (!option.isNull("no_button_audio") && option.getBoolean("no_button_audio")) {
+                                opts.meeting_views_options += MeetingViewsOptions.NO_BUTTON_AUDIO;
+                            }
+
+                            if (!option.isNull("no_button_share") && option.getBoolean("no_button_share")) {
+                                opts.meeting_views_options += MeetingViewsOptions.NO_BUTTON_SHARE;
+                            }
+
+                            if (!option.isNull("no_button_participants") && option.getBoolean("no_button_participants")) {
+                                opts.meeting_views_options += MeetingViewsOptions.NO_BUTTON_PARTICIPANTS;
+                            }
+
+                            if (!option.isNull("no_button_more") && option.getBoolean("no_button_more")) {
+                                opts.meeting_views_options += MeetingViewsOptions.NO_BUTTON_MORE;
+                            }
+
+                            if (!option.isNull("no_text_meeting_id") && option.getBoolean("no_text_meeting_id")) {
+                                opts.meeting_views_options += MeetingViewsOptions.NO_TEXT_MEETING_ID;
+                            }
+
+                            if (!option.isNull("no_text_password") && option.getBoolean("no_text_password")) {
+                                opts.meeting_views_options += MeetingViewsOptions.NO_TEXT_PASSWORD;
+                            }
+
+                            if (!option.isNull("no_button_leave") && option.getBoolean("no_button_leave")) {
+                                opts.meeting_views_options += MeetingViewsOptions.NO_BUTTON_LEAVE;
+                            }
+
+                            if (!option.isNull("no_button_switch_camera") && option.getBoolean("no_button_switch_camera")) {
+                                opts.meeting_views_options += MeetingViewsOptions.NO_BUTTON_SWITCH_CAMERA;
+                            }
+
+                            if (!option.isNull("no_button_switch_audio_source") && option.getBoolean("no_button_switch_audio_source")) {
+                                opts.meeting_views_options += MeetingViewsOptions.NO_BUTTON_SWITCH_AUDIO_SOURCE;
+                            }
+                        } catch (JSONException ex) {
+                            Log.i(TAG, ex.getMessage());
+                        }
+                    }
+
+                    int response = meetingService.startInstantMeeting(cordova.getActivity().getApplicationContext(), opts);
+                    if (DEBUG) {
+                        Log.i(TAG, "onClickBtnLoginUserStartInstant, response=" + getMeetingErrorMessage(response));
+                    }
+                    if (response != MeetingError.MEETING_ERROR_SUCCESS) {
+                        pluginResult =  new PluginResult(PluginResult.Status.ERROR, getMeetingErrorMessage(response));
+                        pluginResult.setKeepCallback(true);
+                        callbackContext.sendPluginResult(pluginResult);
+                    } else {
+                        pluginResult =  new PluginResult(PluginResult.Status.OK, getMeetingErrorMessage(response));
+                        pluginResult.setKeepCallback(true);
+                        callbackContext.sendPluginResult(pluginResult);
+                    }
+                }
+            });
+        } catch (Exception e) {
+            callbackContext.error(e.getMessage());
         }
-        // If user is not logged in, throw error.
-        if (!zoomSDK.isLoggedIn()) {
-            pluginResult =  new PluginResult(PluginResult.Status.ERROR, "You are not logged in");
-            pluginResult.setKeepCallback(true);
-            callbackContext.sendPluginResult(pluginResult);
-            return;
-        }
-
-        MeetingService meetingService = zoomSDK.getMeetingService();
-        InstantMeetingOptions opts = new InstantMeetingOptions();
-        // If user provides meeting options, configure them.
-        if (option != null) {
-            try {
-                opts.custom_meeting_id = option.isNull("custom_meeting_id")? null : option.getString("custom_meeting_id");
-                // by rachmad
-                // opts.participant_id = option.isNull("participant_id")? null : option.getString("participant_id");
-                opts.no_unmute_confirm_dialog = option.isNull("no_unmute_confirm_dialog")? false : option.getBoolean("no_unmute_confirm_dialog");
-                opts.no_webinar_register_dialog = option.isNull("no_webinar_register_dialog")? false : option.getBoolean("no_webinar_register_dialog");
-                opts.no_driving_mode = option.isNull("no_driving_mode")? false : option.getBoolean("no_driving_mode");
-                opts.no_invite = option.isNull("no_invite")? false : option.getBoolean("no_invite");
-                opts.no_meeting_end_message = option.isNull("no_meeting_end_message")? false : option.getBoolean("no_meeting_end_message");
-                opts.no_titlebar = option.isNull("no_titlebar")? false : option.getBoolean("no_titlebar");
-                opts.no_bottom_toolbar = option.isNull("no_bottom_toolbar")? false : option.getBoolean("no_bottom_toolbar");
-                opts.no_dial_in_via_phone = option.isNull("no_dial_in_via_phone")? false : option.getBoolean("no_dial_in_via_phone");
-                opts.no_dial_out_to_phone = option.isNull("no_dial_out_to_phone")? false : option.getBoolean("no_dial_out_to_phone");
-                opts.no_disconnect_audio = option.isNull("no_disconnect_audio")? false : option.getBoolean("no_disconnect_audio");
-                opts.no_share = option.isNull("no_share")? false : option.getBoolean("no_share");
-                opts.no_video = option.isNull("no_video")? false : option.getBoolean("no_video");
-                opts.no_meeting_error_message = option.isNull("no_meeting_error_message")? false : option.getBoolean("no_meeting_error_message");
-                opts.meeting_views_options = 0;
-
-                if (!option.isNull("no_button_video") && option.getBoolean("no_button_video")) {
-                    opts.meeting_views_options += MeetingViewsOptions.NO_BUTTON_VIDEO;
-                }
-
-                if (!option.isNull("no_button_audio") && option.getBoolean("no_button_audio")) {
-                    opts.meeting_views_options += MeetingViewsOptions.NO_BUTTON_AUDIO;
-                }
-
-                if (!option.isNull("no_button_share") && option.getBoolean("no_button_share")) {
-                    opts.meeting_views_options += MeetingViewsOptions.NO_BUTTON_SHARE;
-                }
-
-                if (!option.isNull("no_button_participants") && option.getBoolean("no_button_participants")) {
-                    opts.meeting_views_options += MeetingViewsOptions.NO_BUTTON_PARTICIPANTS;
-                }
-
-                if (!option.isNull("no_button_more") && option.getBoolean("no_button_more")) {
-                    opts.meeting_views_options += MeetingViewsOptions.NO_BUTTON_MORE;
-                }
-
-                if (!option.isNull("no_text_meeting_id") && option.getBoolean("no_text_meeting_id")) {
-                    opts.meeting_views_options += MeetingViewsOptions.NO_TEXT_MEETING_ID;
-                }
-
-                if (!option.isNull("no_text_password") && option.getBoolean("no_text_password")) {
-                    opts.meeting_views_options += MeetingViewsOptions.NO_TEXT_PASSWORD;
-                }
-
-                if (!option.isNull("no_button_leave") && option.getBoolean("no_button_leave")) {
-                    opts.meeting_views_options += MeetingViewsOptions.NO_BUTTON_LEAVE;
-                }
-
-                if (!option.isNull("no_button_switch_camera") && option.getBoolean("no_button_switch_camera")) {
-                    opts.meeting_views_options += MeetingViewsOptions.NO_BUTTON_SWITCH_CAMERA;
-                }
-
-                if (!option.isNull("no_button_switch_audio_source") && option.getBoolean("no_button_switch_audio_source")) {
-                    opts.meeting_views_options += MeetingViewsOptions.NO_BUTTON_SWITCH_AUDIO_SOURCE;
-                }
-            } catch (JSONException ex) {
-                Log.i(TAG, ex.getMessage());
-            }
-        }
-
-        cordova.getThreadPool().execute(new Runnable() {
-            @Override
-            public void run() {
-                int response = meetingService.startInstantMeeting(cordova.getActivity().getApplicationContext(), opts);
-                if (DEBUG) {
-                    Log.i(TAG, "onClickBtnLoginUserStartInstant, response=" + getMeetingErrorMessage(response));
-                }
-                PluginResult pluginResult = null;
-                if (response != MeetingError.MEETING_ERROR_SUCCESS) {
-                    pluginResult =  new PluginResult(PluginResult.Status.ERROR, getMeetingErrorMessage(response));
-                    pluginResult.setKeepCallback(true);
-                    callbackContext.sendPluginResult(pluginResult);
-                } else {
-                    pluginResult =  new PluginResult(PluginResult.Status.OK, getMeetingErrorMessage(response));
-                    pluginResult.setKeepCallback(true);
-                    callbackContext.sendPluginResult(pluginResult);
-                }
-            }
-        });
     }
 
     /**
