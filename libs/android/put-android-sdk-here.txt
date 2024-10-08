@@ -1,3 +1,2 @@
-zoom-sdk-android-5.13.10.12577
-- commonlib.aar
-- commonlib.aar
+zoom-sdk-android-6.2.3.24722
+- mobilertc
