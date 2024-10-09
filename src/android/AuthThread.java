@@ -45,8 +45,7 @@ public class AuthThread implements Callable<Boolean>, ZoomSDKInitializeListener 
     /* Zoom SDK auth variables */
     private ZoomSDK mZoomSDK;
     private ZoomSDKInitParams initParams;
-    private String appKey = "";
-    private String appSecret = "";
+    private String jwtToken = "";
     private String webDomain = "";
 
     public AuthThread() {
@@ -101,14 +100,12 @@ public class AuthThread implements Callable<Boolean>, ZoomSDKInitializeListener 
      *
      * Pass and set parameters needed to initialize Zoom SDK.
      *
-     * @param appKey    Zoom SDK App Key.
-     * @param appSecret Zoom SDK App Secret.
+     * @param jwtToken  Zoom SDK JWT Token.
      * @param webDomain Zoom SDK Web Domain. Default is "zoom.us".
      */
-    public void setInitParameters(String appKey, String appSecret, String webDomain) {
+    public void setInitParameters(String jwtToken, String webDomain) {
         if (DEBUG) { Log.v(TAG, "Init parameter set"); }
-        this.initParams.appKey = appKey;
-        this.initParams.appSecret = appSecret;
+        this.initParams.jwtToken = jwtToken;
         this.initParams.domain = webDomain;
         this.initParams.enableLog = true;
     }

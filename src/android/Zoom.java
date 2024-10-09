@@ -24,6 +24,7 @@ import android.content.DialogInterface;
 
 import us.zoom.sdk.ZoomSDK;
 import us.zoom.sdk.ZoomSDKAuthenticationListener;
+import us.zoom.sdk.SDKNotificationServiceError;
 import us.zoom.sdk.ZoomSDKInitializeListener;
 import us.zoom.sdk.ZoomApiError;
 import us.zoom.sdk.ZoomAuthenticationError;
@@ -87,9 +88,8 @@ public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener
 
         switch(action) {
             case "initialize":
-                String appKey = args.getString(0);
-                String appSecret = args.getString(1);
-                this.initialize(appKey, appSecret, callbackContext);
+                String jwtToken = args.getString(0);
+                this.initialize(jwtToken, callbackContext);
                 break;
             case "login":
                 String username = args.getString(0);
@@ -141,18 +141,16 @@ public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener
      *
      * Initialize Zoom SDK.
      *
-     * @param appKey        Zoom SDK app key.
-     * @param appSecret     Zoom SDK app secret.
+     * @param jwtToken      Zoom SDK JWT Token.
      * @param callbackContext Cordova callback context.
      */
-    private void initialize(String appKey, String appSecret, CallbackContext callbackContext) {
+    private void initialize(String jwtToken, CallbackContext callbackContext) {
         if (DEBUG) {
             Log.v(TAG, "********** Zoom's initialize called **********");
         }
 
         // Note: When "null" is pass from JS to Android, it is transferred as a word "null".
-        if (appKey == null || appKey.trim().isEmpty() || appKey.equals("null")
-                || appSecret == null || appSecret.trim().isEmpty() || appSecret.equals("null")) {
+        if (jwtToken == null || jwtToken.trim().isEmpty() || jwtToken.equals("null")) {
             callbackContext.error("Both SDK key and secret cannot be empty");
             return;
         }
@@ -164,7 +162,7 @@ public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener
             at.setCallbackContext(callbackContext);                     // Set callback context
             at.setAction("initialize");                                 // Set action
             at.setLock(LOCK);
-            at.setInitParameters(appKey, appSecret, this.WEB_DOMAIN);   // Set init parameters
+            at.setInitParameters(jwtToken, this.WEB_DOMAIN);            // Set init parameters
             FutureTask<Boolean> fr = new FutureTask<Boolean>(at);
 
             cordova.getActivity().runOnUiThread(fr);                    // Run init method on main thread
@@ -1054,9 +1052,6 @@ public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener
             case MeetingError.MEETING_ERROR_CLIENT_INCOMPATIBLE:
                 message.append("Zoom SDK version is too low to connect to the meeting");
                 break;
-            case MeetingError.MEETING_ERROR_DISALLOW_HOST_RESGISTER_WEBINAR:
-                message.append("Cannot register a webinar using the host email");
-                break;
             case MeetingError.MEETING_ERROR_DISALLOW_PANELIST_REGISTER_WEBINAR:
                 message.append("Cannot register a webinar using a panelist's email");
                 break;
@@ -1140,7 +1135,7 @@ public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener
      * onNotificationServiceStatus
      */
     @Override
-    public void onNotificationServiceStatus(SDKNotificationServiceStatus status) {
+    public void onNotificationServiceStatus(SDKNotificationServiceStatus status, SDKNotificationServiceError error) {
         Log.v(TAG, "onNotificationServiceStatus is triggered");
     }
 
