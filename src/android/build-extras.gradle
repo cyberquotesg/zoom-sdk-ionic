@@ -12,6 +12,7 @@ android {
     packagingOptions {
         exclude 'META-INF/NOTICE'
         exclude 'META-INF/LICENSE'
+        exclude "lib/arm64-v8a/libsodium.so"
     }
 
     lintOptions {
@@ -55,7 +56,9 @@ dependencies {
     implementation 'androidx.core:core-ktx:1.6.0'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0'
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.4.0'
-    implementation(name:'mobilertc', ext:'aar')
+    implementation(name:'mobilertc', ext:'aar') {
+        exclude group: 'org.libsodium', module: 'libsodium'
+    }
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 }
 
