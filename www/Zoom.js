@@ -11,8 +11,8 @@ function callNativeFunction(name, args, success, error) {
 
 var zoom = {
 
-    initialize: function(appKey, appSecret, success, error) {
-        callNativeFunction('initialize', [appKey, appSecret], success, error);
+    initialize: function(jwtToken, success, error) {
+        callNativeFunction('initialize', [jwtToken], success, error);
     },
     
     login: function(username, password, success, error) {

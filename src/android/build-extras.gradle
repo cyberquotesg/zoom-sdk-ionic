@@ -12,10 +12,10 @@ android {
     packagingOptions {
         exclude 'META-INF/NOTICE'
         exclude 'META-INF/LICENSE'
-        exclude "lib/x86/libsodium.so"
-        exclude "lib/x86_64/libsodium.so"
-        exclude "lib/arm64-v8a/libsodium.so"
-        exclude "lib/armeabi-v7a/libsodium.so"
+        pickFirst "lib/x86/libsodium.so"
+        pickFirst "lib/x86_64/libsodium.so"
+        pickFirst "lib/arm64-v8a/libsodium.so"
+        pickFirst "lib/armeabi-v7a/libsodium.so"
     }
 
     lintOptions {
