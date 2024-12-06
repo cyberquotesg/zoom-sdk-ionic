@@ -108,6 +108,8 @@ public class AuthThread implements Callable<Boolean>, ZoomSDKInitializeListener 
         this.initParams.jwtToken = jwtToken;
         this.initParams.domain = webDomain;
         this.initParams.enableLog = true;
+        this.initParams.enableGenerateDump =true;
+        this.initParams.logSize = 5;
     }
 
     /**

@@ -45,6 +45,26 @@ import us.zoom.sdk.MeetingParameter;
 
 import cordova.plugin.zoom.AuthThread;
 
+import us.zoom.sdk.InMeetingServiceListener;
+import us.zoom.sdk.CameraControlRequestType;
+import us.zoom.sdk.ICameraControlRequestHandler;
+import us.zoom.sdk.CameraControlRequestResult;
+import us.zoom.sdk.InMeetingChatMessage;
+import us.zoom.sdk.ChatMessageDeleteType;
+import us.zoom.sdk.ZoomSDKFileReceiver;
+import us.zoom.sdk.ZoomSDKFileSender;
+import us.zoom.sdk.ZoomSDKFileTransferInfo;
+import us.zoom.sdk.MobileRTCFocusModeShareType;
+import us.zoom.sdk.FreeMeetingNeedUpgradeType;
+import us.zoom.sdk.IMeetingInputUserInfoHandler;
+import us.zoom.sdk.IRequestLocalRecordingPrivilegeHandler;
+import us.zoom.sdk.InMeetingAudioController;
+import us.zoom.sdk.LocalRecordingRequestPrivilegeStatus;
+import us.zoom.sdk.VideoQuality;
+import us.zoom.sdk.InMeetingChatController;
+import us.zoom.sdk.IMeetingArchiveConfirmHandler;
+import us.zoom.sdk.InMeetingEventHandler;
+
 /**
  * Zoom
  *
@@ -53,7 +73,7 @@ import cordova.plugin.zoom.AuthThread;
  * @author  Zoom Video Communications, Inc.
  * @version v4.6.21666.0603
  */
-public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener, MeetingServiceListener {
+public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener, MeetingServiceListener, InMeetingServiceListener {
     /* Debug variables */
     private static final String TAG = "<------- ZoomIonicAngularPlugin ---------->";
     private static final boolean DEBUG = false;
@@ -1146,4 +1166,242 @@ public class Zoom extends CordovaPlugin implements ZoomSDKAuthenticationListener
     public void onMeetingParameterNotification(MeetingParameter meetingParameter) {
         Log.v(TAG, "onMeetingParameterNotification is triggered");
     }
+
+    // ==============================================================================
+
+    @Override
+    public void onActiveSpeakerVideoUserChanged(long userId){}
+
+    @Override
+    public void onActiveVideoUserChanged(long userId){}
+
+    @Override
+    public void onAICompanionActiveChangeNotice(boolean active){}
+
+    @Override
+    public void onAllHandsLowered(){}
+
+    @Override
+    public void onAllowParticipantsRenameNotification(boolean allow){}
+
+    @Override
+    public void onAllowParticipantsRequestCloudRecording(boolean bAllow){}
+
+    @Override
+    public void onAllowParticipantsShareWhiteBoardNotification(boolean allow){}
+
+    @Override
+    public void onAllowParticipantsStartVideoNotification(boolean allow){}
+
+    @Override
+    public void onAllowParticipantsUnmuteSelfNotification(boolean allow){}
+
+    @Override
+    public void onCameraControlRequestReceived(long userId, CameraControlRequestType requestType, ICameraControlRequestHandler handler){}
+
+    @Override
+    public void onCameraControlRequestResult(long userId, boolean isApproved){}
+
+    @Override
+    public void onCameraControlRequestResult(long userId, CameraControlRequestResult result){}
+
+    @Override
+    public void onChatMessageReceived(InMeetingChatMessage msg){}
+
+    @Override
+    public void onChatMsgDeleteNotification(String msgID, ChatMessageDeleteType deleteBy){}
+
+    @Override
+    public void onClosedCaptionReceived(String message, long senderId){}
+
+    @Override
+    public void onCloudRecordingStorageFull(long gracePeriodDate){}
+
+    @Override
+    public void onFileReceived(ZoomSDKFileReceiver receiver){}
+
+    @Override
+    public void onFileSendStart(ZoomSDKFileSender sender){}
+
+    @Override
+    public void onFileTransferProgress(ZoomSDKFileTransferInfo info){}
+
+    @Override
+    public void onFocusModeShareTypeChanged(MobileRTCFocusModeShareType shareType){}
+
+    @Override
+    public void onFocusModeStateChanged(boolean on){}
+
+    @Override
+    public void onFollowHostVideoOrderChanged(boolean bFollow){}
+
+    @Override
+    public void onFreeMeetingNeedToUpgrade(FreeMeetingNeedUpgradeType type, String giftUrl){}
+
+    @Override
+    public void onFreeMeetingReminder(boolean isHost, boolean canUpgrade, boolean isFirstGift){}
+
+    @Override
+    public void onFreeMeetingUpgradeToGiftFreeTrialStart(){}
+
+    @Override
+    public void onFreeMeetingUpgradeToGiftFreeTrialStop(){}
+
+    @Override
+    public void onFreeMeetingUpgradeToProMeeting(){}
+
+    @Override
+    public void onHostAskStartVideo(long userId){}
+
+    @Override
+    public void onHostAskUnMute(long userId){}
+
+    @Override
+    public void onHostVideoOrderUpdated(java.util.List<java.lang.Long> orderList){}
+
+    @Override
+    public void onInMeetingUserAvatarPathUpdated(long userId){}
+
+    @Override
+    public void onInvalidReclaimHostkey(){}
+
+    @Override
+    public void onJoinMeetingNeedUserInfo(IMeetingInputUserInfoHandler handler){}
+
+    @Override
+    public void onJoinWebinarNeedUserNameAndEmail(InMeetingEventHandler handler){}
+
+    @Override
+    public void onLocalRecordingPrivilegeRequested(IRequestLocalRecordingPrivilegeHandler handler){}
+
+    @Override
+    public void onLocalRecordingStatus(long userId, InMeetingServiceListener.RecordingStatus status){}
+
+    @Override
+    public void onLocalVideoOrderUpdated(java.util.List<java.lang.Long> localOrderList){}
+
+    @Override
+    public void onLowOrRaiseHandStatusChanged(long userId, boolean isRaiseHand){}
+
+    @Override
+    public void onMeetingActiveVideo(long userId){}
+
+    @Override
+    public void onMeetingCoHostChange(long userId, boolean isCoHost){}
+
+    /**
+     * onMeetingFail
+     */
+    @Override
+    public void onMeetingFail(int errorCode, int internalErrorCode) {
+        if (DEBUG) {
+            Log.v(TAG, "*********onMeetingFail********* errorCode =====" + String.valueOf(errorCode));
+            Log.v(TAG, "*********onMeetingFail********* internalErrorCode =====" + String.valueOf(internalErrorCode));
+        }
+    }
+
+    @Override
+    public void onMeetingFullToWatchLiveStream(String liveStreamUrl){}
+
+    @Override
+    public void onMeetingHostChanged(long userId){}
+
+    @Override
+    public void onMeetingLeaveComplete(long ret){}
+
+    @Override
+    public void onMeetingLockStatus(boolean isLock){}
+
+    @Override
+    public void onMeetingNeedCloseOtherMeeting(InMeetingEventHandler handler){}
+
+    @Override
+    public void onMeetingNeedPasswordOrDisplayName(boolean needPassword, boolean needDisplayName, InMeetingEventHandler handler){}
+
+    @Override
+    public void onMeetingTopicChanged(String topic){}
+
+    @Override
+    public void onMeetingUserJoin(java.util.List<java.lang.Long> userList){}
+
+    @Override
+    public void onMeetingUserLeave(java.util.List<java.lang.Long> userList){}
+
+    @Override
+    public void onMeetingUserUpdated(long userId){}
+
+    @Override
+    public void onMicrophoneStatusError(InMeetingAudioController.MobileRTCMicrophoneError error){}
+
+    @Override
+    public void onMuteOnEntryStatusChange(boolean enable){}
+
+    @Override
+    public void onMyAudioSourceTypeChanged(int type){}
+
+    @Override
+    public void onParticipantProfilePictureStatusChange(boolean hidden){}
+
+    @Override
+    public void onPermissionRequested(String[] permissions){}
+
+    @Override
+    public void onRecordingStatus(InMeetingServiceListener.RecordingStatus status){}
+
+    @Override
+    public void onRequestLocalRecordingPrivilegeChanged(LocalRecordingRequestPrivilegeStatus status){}
+
+    @Override
+    public void onShareMeetingChatStatusChanged(boolean start){}
+
+    @Override
+    public void onSilentModeChanged(boolean inSilentMode){}
+
+    @Override
+    public void onSinkAllowAttendeeChatNotification(int privilege){}
+
+    @Override
+    public void onSinkAttendeeChatPriviledgeChanged(int privilege){}
+
+    @Override
+    public void onSinkJoin3rdPartyTelephonyAudio(String audioInfo){}
+
+    @Override
+    public void onSinkMeetingVideoQualityChanged(VideoQuality videoQuality, long userId){}
+
+    @Override
+    public void onSinkPanelistChatPrivilegeChanged(InMeetingChatController.MobileRTCWebinarPanelistChatPrivilege privilege){}
+
+    @Override
+    public void onSpotlightVideoChanged(java.util.List<java.lang.Long> userList){}
+
+    @Override
+    public void onSuspendParticipantsActivities(){}
+
+    @Override
+    public void onUserAudioStatusChanged(long userId, InMeetingServiceListener.AudioStatus audioStatus){}
+
+    @Override
+    public void onUserAudioTypeChanged(long userId){}
+
+    @Override
+    public void onUserConfirmToStartArchive(IMeetingArchiveConfirmHandler handler){}
+
+    @Override
+    public void onUserNamesChanged(java.util.List<java.lang.Long> userList){}
+
+    @Override
+    public void onUserVideoStatusChanged(long userId, InMeetingServiceListener.VideoStatus status){}
+
+    @Override
+    public void onUVCCameraStatusChange(String cameraId, InMeetingServiceListener.UVCCameraStatus status){}
+
+    @Override
+    public void onVideoAlphaChannelStatusChanged(boolean isAlphaModeOn){}
+
+    @Override
+    public void onWebinarNeedInputScreenName(InMeetingEventHandler handler){}
+
+    @Override
+    public void onWebinarNeedRegister(String registerUrl){}
 }
